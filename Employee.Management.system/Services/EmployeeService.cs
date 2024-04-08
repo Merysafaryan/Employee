@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,11 +18,10 @@ namespace Employee.Management.system.Services
 
     public class EmployeeService : IEmployeeService
     {
-        private readonly IDbContextFactory<DataContext> _factory;
-
-        public EmployeeService(IDbContextFactory<DataContext> factory)
+        private readonly DataContext _context;
+        public EmployeeService(DataContext context)
         {
-            _factory = factory;
+            _context = context;
         }
 
         public async Task<BaseResponse> AddEmployee(AddEmployeeForm form)
@@ -30,27 +29,24 @@ namespace Employee.Management.system.Services
             var response = new BaseResponse();
             try
             {
-                using (var context = _factory.CreateDbContext())
+                _context.Add(new EmployeeManagement.DTOs.Employee
                 {
-                    context.Add(new EmployeeManagement.DTOs.Employee
-                    {
-                        Name = form.Name,
-                        Position = form.Position,
-                        Salary = form.Salary,
-                        Type = form.Type,
-                        ImgUrl = form.ImgUrl
-                    });
-                    var result = await context.SaveChangesAsync();
-                    if (result == 1)
-                    {
-                        response.StatusCode = 200;
-                        response.Message = "Employee added successfully";
-                    }
-                    else
-                    {
-                        response.StatusCode = 400;
-                        response.Message = "Error occurred while adding employee";
-                    }
+                    Name = form.Name,
+                    Position = form.Position,
+                    Salary = form.Salary,
+                    Type = form.Type,
+                    ImgUrl = form.ImgUrl
+                });
+                var result = await _context.SaveChangesAsync();
+                if (result == 1)
+                {
+                    response.StatusCode = 200;
+                    response.Message = "Employee added successfully";
+                }
+                else
+                {
+                    response.StatusCode = 400;
+                    response.Message = "Error occurred while adding employee";
                 }
             }
             catch (Exception ex)
@@ -66,20 +62,17 @@ namespace Employee.Management.system.Services
             var response = new BaseResponse();
             try
             {
-                using (var context = _factory.CreateDbContext())
+                _context.Remove(employee);
+                var result = await _context.SaveChangesAsync();
+                if (result == 1)
                 {
-                    context.Remove(employee);
-                    var result = await context.SaveChangesAsync();
-                    if (result == 1)
-                    {
-                        response.StatusCode = 200;
-                        response.Message = "Employee deleted successfully";
-                    }
-                    else
-                    {
-                        response.StatusCode = 400;
-                        response.Message = "Error occurred while deleting employee";
-                    }
+                    response.StatusCode = 200;
+                    response.Message = "Employee deleted successfully";
+                }
+                else
+                {
+                    response.StatusCode = 400;
+                    response.Message = "Error occurred while deleting employee";
                 }
             }
             catch (Exception ex)
@@ -95,20 +88,17 @@ namespace Employee.Management.system.Services
             var response = new BaseResponse();
             try
             {
-                using (var context = _factory.CreateDbContext())
+                _context.Update(employee);
+                var result = await _context.SaveChangesAsync();
+                if (result == 1)
                 {
-                    context.Update(employee);
-                    var result = await context.SaveChangesAsync();
-                    if (result == 1)
-                    {
-                        response.StatusCode = 200;
-                        response.Message = "Employee updated successfully";
-                    }
-                    else
-                    {
-                        response.StatusCode = 400;
-                        response.Message = "Error occurred while updating employee";
-                    }
+                    response.StatusCode = 200;
+                    response.Message = "Employee updated successfully";
+                }
+                else
+                {
+                    response.StatusCode = 400;
+                    response.Message = "Error occurred while updating employee";
                 }
             }
             catch (Exception ex)
@@ -124,20 +114,17 @@ namespace Employee.Management.system.Services
             var response = new GetEmployeeResponse();
             try
             {
-                using (var context = _factory.CreateDbContext())
+                var employee = await _context.Employees.FirstOrDefaultAsync(x => x.Id == id);
+                if (employee != null)
                 {
-                    var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == id);
-                    if (employee != null)
-                    {
-                        response.StatusCode = 200;
-                        response.Message = "Success";
-                        response.Employee = employee;
-                    }
-                    else
-                    {
-                        response.StatusCode = 404;
-                        response.Message = "Employee not found";
-                    }
+                    response.StatusCode = 200;
+                    response.Message = "Success";
+                    response.Employee = employee;
+                }
+                else
+                {
+                    response.StatusCode = 404;
+                    response.Message = "Employee not found";
                 }
             }
             catch (Exception ex)
@@ -153,13 +140,10 @@ namespace Employee.Management.system.Services
             var response = new GetEmployeesResponse();
             try
             {
-                using (var context = _factory.CreateDbContext())
-                {
-                    var employees = await context.Employees.ToListAsync();
-                    response.StatusCode = 200;
-                    response.Message = "Success";
-                    response.Employees = employees;
-                }
+                var employees = await _context.Employees.ToListAsync();
+                response.StatusCode = 200;
+                response.Message = "Success";
+                response.Employees = employees;
             }
             catch (Exception ex)
             {
@@ -170,3 +154,4 @@ namespace Employee.Management.system.Services
         }
     }
 }
+
