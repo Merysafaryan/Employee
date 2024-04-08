@@ -16,7 +16,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); // Use "DefaultConnection"
-builder.Services.AddDbContextFactory<DataContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -62,5 +62,10 @@ public class DataContext : IdentityDbContext<IdentityUser>
     internal void Add(Employee.Management.system.Responses.Employee employee)
     {
         throw new NotImplementedException();
+    }
+
+    public DataContext(DbContextOptions<DataContext> options) : base(options)
+    {
+
     }
 }
